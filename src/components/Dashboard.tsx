@@ -6,7 +6,7 @@ import HourEntryForm from "./HourEntryForm";
 import EntriesList from "./EntriesList";
 import AdminDashboard from "./AdminDashboard";
 
-const ADMIN_EMAIL = "f.sweiss7@gmail.com";
+const ADMIN_EMAIL = "threeacoaching@gmail.com";
 //\\=======================================\\//
 // Change this whatever Email you'd like to be the administrator.
 // In this case, threeacoaching@gmail.com
