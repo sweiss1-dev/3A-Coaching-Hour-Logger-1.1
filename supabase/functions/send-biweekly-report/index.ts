@@ -100,7 +100,17 @@ function buildReport(
   return lines.join("\n");
 }
 
-Deno.serve(async (_req) => {
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+Deno.serve(async (req) => {
+  // 1. Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
+
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -111,10 +121,10 @@ Deno.serve(async (_req) => {
     const periodDays = Number(Deno.env.get("PERIOD_DAYS") ?? "15");
 
     if (!supabaseUrl || !serviceKey) {
-      return new Response("Missing Supabase env vars", { status: 500 });
+      return new Response("Missing Supabase env vars", { status: 500, headers: corsHeaders });
     }
     if (!resendKey) {
-      return new Response("Missing RESEND_API_KEY", { status: 500 });
+      return new Response("Missing RESEND_API_KEY", { status: 500, headers: corsHeaders });
     }
 
     const supabase = createClient(supabaseUrl, serviceKey, {
@@ -135,7 +145,7 @@ Deno.serve(async (_req) => {
       .order("work_date", { ascending: true });
 
     if (hoursErr) {
-      return new Response(`DB error: ${hoursErr.message}`, { status: 500 });
+      return new Response(`DB error: ${hoursErr.message}`, { status: 500, headers: corsHeaders });
     }
 
     const rows = (hours ?? []) as HourRow[];
@@ -178,10 +188,10 @@ Deno.serve(async (_req) => {
 
     if (!emailRes.ok) {
       const body = await emailRes.text();
-      return new Response(`Resend error: ${emailRes.status} ${body}`, { status: 502 });
+      return new Response(`Resend error: ${emailRes.status} ${body}`, { status: 502, headers: corsHeaders });
     }
     
-    await supabase.from("hours").delete().gte("work_date", periodStart);
+    //await supabase.from("hours").delete().gte("work_date", periodStart);
 
     return new Response(
       JSON.stringify({
@@ -191,11 +201,12 @@ Deno.serve(async (_req) => {
         entries: rows.length,
         filename,
       }),
-      { headers: { "Content-Type": "application/json" } }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
     return new Response(`Error: ${err instanceof Error ? err.message : String(err)}`, {
       status: 500,
+      headers: corsHeaders
     });
   }
 });

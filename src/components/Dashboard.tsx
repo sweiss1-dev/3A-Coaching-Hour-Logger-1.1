@@ -7,7 +7,10 @@ import EntriesList from "./EntriesList";
 import AdminDashboard from "./AdminDashboard";
 
 const ADMIN_EMAIL = "f.sweiss7@gmail.com";
-
+//\\=======================================\\//
+// Change this whatever Email you'd like to be the administrator.
+// In this case, threeacoaching@gmail.com
+//\\=======================================\\//
 type Props = { session: Session };
 
 export default function Dashboard({ session }: Props) {
